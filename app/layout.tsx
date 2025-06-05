@@ -24,6 +24,21 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        {/* <!-- content security policy needs to be present and needs to be based on your url and your Make zone url address --> */}
+        {/*
+TODO: Add security
+<meta
+          http-equiv="Content-Security-Policy"
+          content="default-src 'self' localhost:3000 https://eu1.make.com https://eu2.make.com https://us1.make.com https://us2.make.com; script-src 'self' https://unpkg.com https://eu1.make.com https://eu2.make.com https://us1.make.com https://us2.make.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com;"
+        /> */}
+        {/* 
+        // TODO: Do we need this?
+        <link
+          rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+        /> */}
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
