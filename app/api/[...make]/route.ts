@@ -47,23 +47,12 @@ async function handler(request: NextRequest) {
     const token = generateToken(userId);
 
     const url = new URL(request.url);
-    // Transform /api/proxy/api/bridge/integrations to /portal/api/bridge/integrations
     const targetPath = url.pathname.replace("/api/make", "/portal");
     const targetUrl = `${PORTAL_URL}${targetPath}${url.search}`;
 
-    console.log("Original URL:", url.toString());
-    console.log("Target URL:", targetUrl);
-
-    // Prepare headers
-    const headers = new Headers();
+    // Add authorization header to the original request
+    const headers = new Headers(request.headers);
     headers.set("Authorization", `Bearer ${token}`);
-
-    // Copy relevant headers from original request
-    request.headers.forEach((value, key) => {
-      if (!["host", "authorization"].includes(key.toLowerCase())) {
-        headers.set(key, value);
-      }
-    });
 
     // Forward the request to Make.com
     const response = await fetch(targetUrl, {
