@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
+import { Trash } from "lucide-react";
 import {
   IntegrationListItem,
   ListIntegrationsResponse,
@@ -33,6 +34,34 @@ export default function ApiPage() {
       console.error("Error fetching integrations:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const initializeIntegration = async (publicVersionId: number) => {
+    try {
+      const { publicUrl } = await fetch(
+        `/api/make/api/bridge/integrations/init/${publicVersionId}`,
+        { method: "POST" }
+      ).then((r) => r.json());
+
+      // 👈 keep the handle; do NOT add "noopener"
+      const popup = window.open(publicUrl, "_blank");
+
+      // Popup blocked? – refresh right away
+      if (!popup) {
+        await fetchIntegrations();
+        return;
+      }
+
+      // Poll until the tab is closed, then refresh once
+      const timer = setInterval(async () => {
+        if (popup.closed) {
+          clearInterval(timer);
+          await fetchIntegrations();
+        }
+      }, 500);
+    } catch (err) {
+      console.error("initialiseIntegration failed:", err);
     }
   };
 
@@ -101,7 +130,7 @@ export default function ApiPage() {
             ) : integrations.length === 0 ? (
               <div className="text-center py-8">No integrations found</div>
             ) : (
-              integrations.map(({ template, scenario }) => (
+              integrations.map(({ template, scenario, state }) => (
                 <Card key={template.publicVersionId} className="p-4">
                   <div className="flex justify-between items-center">
                     <div>
@@ -110,14 +139,36 @@ export default function ApiPage() {
                         Status: {scenario.isActive ? "Active" : "Inactive"}
                       </p>
                     </div>
-                    <Button
-                      onClick={() =>
-                        toggleIntegration(scenario.id, scenario.isActive)
-                      }
-                      variant={scenario.isActive ? "destructive" : "default"}
-                    >
-                      {scenario.isActive ? "Deactivate" : "Activate"}
-                    </Button>
+                    {state.isConnected ? (
+                      <div className="flex justify-center gap-2 items-center ">
+                        <Button
+                          onClick={() =>
+                            toggleIntegration(scenario.id, scenario.isActive)
+                          }
+                          variant={
+                            scenario.isActive ? "destructive" : "default"
+                          }
+                        >
+                          {scenario.isActive ? "Deactivate" : "Activate"}
+                        </Button>
+                        <Trash
+                          className="cursor-pointer"
+                          onClick={() =>
+                            // deleteIntegration()
+                            console.log("Delete integration")
+                          }
+                        />
+                      </div>
+                    ) : (
+                      <Button
+                        onClick={() =>
+                          initializeIntegration(template.publicVersionId)
+                        }
+                        variant={scenario.isActive ? "destructive" : "default"}
+                      >
+                        Connect
+                      </Button>
+                    )}
                   </div>
                 </Card>
               ))
