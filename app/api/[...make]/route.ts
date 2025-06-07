@@ -3,16 +3,10 @@ import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import { cookies } from "next/headers";
 
-/**
- * Replace these with your real values from environment variables:
- */
 const SECRET_KEY = process.env.MAKE_BRIDGE_API_SECRET;
 const KEY_ID = process.env.MAKE_BRIDGE_API_KEY_ID;
 const PORTAL_URL = process.env.MAKE_BRIDGE_PORTAL_URL || "https://eu2.make.com";
 
-/**
- * Helper function to validate authentication
- */
 async function validateAuth(request: NextRequest) {
   const cookieStore = await cookies();
   const userId = cookieStore.get("userId")?.value;
@@ -24,9 +18,6 @@ async function validateAuth(request: NextRequest) {
   return userId;
 }
 
-/**
- * Generate JWT token for Make.com authentication
- */
 function generateToken(userId: string) {
   if (!SECRET_KEY || !KEY_ID) {
     throw new Error(
@@ -47,10 +38,7 @@ function generateToken(userId: string) {
   );
 }
 
-/**
- * Main handler for all HTTP methods
- */
-async function handleProxy(request: NextRequest) {
+async function handler(request: NextRequest) {
   try {
     // Validate auth and get userId
     const userId = await validateAuth(request);
@@ -58,10 +46,9 @@ async function handleProxy(request: NextRequest) {
     // Generate fresh JWT
     const token = generateToken(userId);
 
-    // Prepare the target URL
     const url = new URL(request.url);
     // Transform /api/proxy/api/bridge/integrations to /portal/api/bridge/integrations
-    const targetPath = "/portal" + url.pathname;
+    const targetPath = url.pathname.replace("/api/make", "/portal");
     const targetUrl = `${PORTAL_URL}${targetPath}${url.search}`;
 
     console.log("Original URL:", url.toString());
@@ -102,9 +89,9 @@ async function handleProxy(request: NextRequest) {
   }
 }
 
-// Export handlers for all HTTP methods
-export const GET = handleProxy;
-export const POST = handleProxy;
-export const PUT = handleProxy;
-export const DELETE = handleProxy;
-export const PATCH = handleProxy;
+// Export the handler for all HTTP methods
+export const GET = handler;
+export const POST = handler;
+export const PUT = handler;
+export const DELETE = handler;
+export const PATCH = handler;
