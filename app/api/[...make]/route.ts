@@ -58,9 +58,6 @@ async function handler(request: NextRequest) {
     const response = await fetch(targetUrl, {
       method: request.method,
       headers,
-      body: ["GET", "HEAD"].includes(request.method)
-        ? undefined
-        : await request.text(),
     });
 
     return NextResponse.json(await response.json());
