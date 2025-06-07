@@ -60,8 +60,12 @@ async function handleProxy(request: NextRequest) {
 
     // Prepare the target URL
     const url = new URL(request.url);
-    const targetPath = url.pathname.replace("/api/proxy", "");
+    // Transform /api/proxy/api/bridge/integrations to /portal/api/bridge/integrations
+    const targetPath = url.pathname.replace("/api/proxy", "/portal");
     const targetUrl = `${PORTAL_URL}${targetPath}${url.search}`;
+
+    console.log("Original URL:", url.toString());
+    console.log("Target URL:", targetUrl);
 
     // Prepare headers
     const headers = new Headers();
@@ -89,6 +93,9 @@ async function handleProxy(request: NextRequest) {
       responseHeaders.set(key, value);
     });
 
+    console.log(
+      `Proxying request to ${targetUrl} with method ${request.method}`
+    );
     return new NextResponse(response.body, {
       status: response.status,
       statusText: response.statusText,

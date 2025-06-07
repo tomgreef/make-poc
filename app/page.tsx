@@ -43,9 +43,7 @@ export default function Home() {
 
       <main className="flex-1 p-4">
         <div className="max-w-[1000px] mx-auto">
-          <portal-integrations
-            urlOrPrefix={`${process.env.NEXT_PUBLIC_URL}/api/proxy`}
-          />
+          <portal-integrations urlOrPrefix={process.env.NEXT_PUBLIC_URL} />
         </div>
       </main>
 
